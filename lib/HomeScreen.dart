@@ -11,6 +11,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
+import 'TtsScreen.dart';
 
 import 'CardScanner.dart';
 import 'EnhanceScreen.dart';
@@ -62,6 +63,22 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) {
       setState(() => isInit = true);
     }
+  }
+
+  void _openTtsScreen() {
+    if (_lastImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Capture or pick an image first")),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TtsScreen(image: _lastImage!),
+      ),
+    );
   }
 
   Future<void> flipCamera() async {
@@ -135,10 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'Scan, Recognize & Enhance',
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ],
@@ -323,9 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: theme.primaryColor.withOpacity(0.9),
                 height: 3,
                 margin: const EdgeInsets.symmetric(horizontal: 30),
-              )
-                  .animate(onPlay: (controller) => controller.repeat())
-                  .moveY(
+              ).animate(onPlay: (controller) => controller.repeat()).moveY(
                     begin: 0,
                     end: MediaQuery.of(context).size.height * 0.5,
                     duration: 2000.ms,
@@ -350,10 +362,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          _buildActionButton(
+            icon: Icons.volume_up,
+            label: 'TTS',
+            onTap: _openTtsScreen,
+            isDark: isDark,
+            theme: theme,
+          ),
           _buildActionButton(
             icon: Icons.flip_camera_ios,
             label: 'Flip',
@@ -362,13 +381,6 @@ class _HomeScreenState extends State<HomeScreen> {
             theme: theme,
           ),
           _buildCaptureButton(isDark, theme),
-          _buildActionButton(
-            icon: Icons.picture_as_pdf,
-            label: 'Export',
-            onTap: _showExportOptions,
-            isDark: isDark,
-            theme: theme,
-          ),
           _buildActionButton(
             icon: Icons.photo_library,
             label: 'Gallery',
@@ -380,6 +392,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 processImage(image);
               }
             },
+            isDark: isDark,
+            theme: theme,
+          ),
+          _buildActionButton(
+            icon: Icons.picture_as_pdf,
+            label: 'Export',
+            onTap: _showExportOptions,
             isDark: isDark,
             theme: theme,
           ),
@@ -433,25 +452,38 @@ class _HomeScreenState extends State<HomeScreen> {
           processImage(image);
         });
       },
-      child: Container(
-        width: 70,
-        height: 70,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: theme.primaryColor.withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.primaryColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.primaryColor.withOpacity(0.35),
+                  blurRadius: 14,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: const Icon(Icons.camera_alt, color: Colors.white, size: 32),
+            child: const Icon(
+              Icons.camera_alt,
+              size: 32,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Capture",
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? Colors.grey : Colors.grey.shade700,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -595,7 +627,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       setState(() => _isExporting = true);
 
-      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      final textRecognizer =
+          TextRecognizer(script: TextRecognitionScript.latin);
       final inputImage = InputImage.fromFile(_lastImage!);
       final recognizedText = await textRecognizer.processImage(inputImage);
       await textRecognizer.close();
@@ -624,7 +657,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       setState(() => _isExporting = true);
 
-      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      final textRecognizer =
+          TextRecognizer(script: TextRecognitionScript.latin);
       final inputImage = InputImage.fromFile(_lastImage!);
       final recognizedText = await textRecognizer.processImage(inputImage);
       await textRecognizer.close();
