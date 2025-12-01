@@ -1,5 +1,5 @@
+// HomeScreen.dart (Enhanced Version)
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter_ocr/CardScanner.dart';
 import 'package:flutter_ocr/RecognizerScreen.dart';
@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:provider/provider.dart';
 import 'EnhanceScreen.dart';
+import 'ThemeProvider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<CameraDescription> _cameras;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     imagePicker = ImagePicker();
     initalizeCamera();
@@ -44,10 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (e is CameraException) {
         switch (e.code) {
           case 'CameraAccessDenied':
-            // Handle access errors here.
             break;
           default:
-            // Handle other errors here.
             break;
         }
       }
@@ -57,184 +55,367 @@ class _HomeScreenState extends State<HomeScreen> {
   bool scan = false;
   bool recognize = true;
   bool enhance = false;
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Header with Theme Toggle
+              _buildHeader(context, themeProvider, isDark),
+              const SizedBox(height: 20),
+
+              // Mode Selection Cards
+              _buildModeSelector(isDark, theme),
+              const SizedBox(height: 20),
+
+              // Camera Preview
+              Expanded(child: _buildCameraPreview(isDark, theme)),
+              const SizedBox(height: 20),
+
+              // Action Buttons
+              _buildActionButtons(isDark, theme),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, ThemeProvider themeProvider, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'OCR Scanner',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+            Text(
+              'Scan, Recognize & Enhance',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode,
+              color: Theme.of(context).primaryColor,
+            ),
+            onPressed: themeProvider.toggleTheme,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModeSelector(bool isDark, ThemeData theme) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.only(top: 50, bottom: 15, left: 5, right: 5),
-      child: Column(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        children: [
+          _buildModeButton(
+            icon: Icons.qr_code_scanner,
+            label: 'Scan',
+            isSelected: scan,
+            onTap: () => setState(() {
+              scan = true;
+              recognize = false;
+              enhance = false;
+            }),
+            isDark: isDark,
+            theme: theme,
+          ),
+          _buildModeButton(
+            icon: Icons.document_scanner,
+            label: 'Recognize',
+            isSelected: recognize,
+            onTap: () => setState(() {
+              scan = false;
+              recognize = true;
+              enhance = false;
+            }),
+            isDark: isDark,
+            theme: theme,
+          ),
+          _buildModeButton(
+            icon: Icons.auto_fix_high,
+            label: 'Enhance',
+            isSelected: enhance,
+            onTap: () => setState(() {
+              scan = false;
+              recognize = false;
+              enhance = true;
+            }),
+            isDark: isDark,
+            theme: theme,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeButton({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required ThemeData theme,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.primaryColor
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 28,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.grey : Colors.grey.shade600),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.grey : Colors.grey.shade600),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraPreview(bool isDark, ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: isInit
+                  ? AspectRatio(
+                      aspectRatio: controller.value.aspectRatio,
+                      child: CameraPreview(controller),
+                    )
+                  : Container(
+                      color: isDark ? Colors.black : Colors.grey.shade200,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: theme.primaryColor,
+                        ),
+                      ),
+                    ),
+            ),
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: const EdgeInsets.all(20),
+              child: Image.asset(
+                "images/f1.png",
+                fit: BoxFit.fill,
+              ),
+            ),
+            Positioned(
+              top: 30,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: theme.primaryColor.withOpacity(0.9),
+                height: 3,
+                margin: const EdgeInsets.symmetric(horizontal: 30),
+              )
+                  .animate(onPlay: (controller) => controller.repeat())
+                  .moveY(
+                    begin: 0,
+                    end: MediaQuery.of(context).size.height * 0.5,
+                    duration: 2000.ms,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(bool isDark, ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Card(
-            color: Colors.blueAccent,
-            child: SizedBox(
-              height: 70,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.scanner,
-                          size: 25,
-                          color: scan ? Colors.black : Colors.white,
-                        ),
-                        Text(
-                          'Scan',
-                          style: TextStyle(
-                            color: scan ? Colors.black : Colors.white,
-                          ),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        scan = true;
-                        recognize = false;
-                        enhance = false;
-                      });
-                    },
-                  ),
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.document_scanner,
-                          size: 25,
-                          color: recognize ? Colors.black : Colors.white,
-                        ),
-                        Text(
-                          'Recognize',
-                          style: TextStyle(
-                            color: recognize ? Colors.black : Colors.white,
-                          ),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        scan = false;
-                        recognize = true;
-                        enhance = false;
-                      });
-                    },
-                  ),
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.assignment_sharp,
-                          size: 25,
-                          color: enhance ? Colors.black : Colors.white,
-                        ),
-                        Text(
-                          'Enhance',
-                          style: TextStyle(
-                            color: enhance ? Colors.black : Colors.white,
-                          ),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        scan = false;
-                        recognize = false;
-                        enhance = true;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
+          _buildActionButton(
+            icon: Icons.flip_camera_ios,
+            label: 'Flip',
+            onTap: () {},
+            isDark: isDark,
+            theme: theme,
           ),
-          Card(
-            color: Colors.black,
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height - 300,
-                    child: isInit
-                        ? AspectRatio(
-                            aspectRatio: controller.value.aspectRatio,
-                            child: CameraPreview(controller),
-                          )
-                        : Container(),
-                  ),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height - 300,
-                  padding: const EdgeInsets.all(10),
-                  child: Image.asset(
-                    "images/f1.png",
-                    fit: BoxFit.fill,
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  height: 2,
-                  width: MediaQuery.of(context).size.width,
-                  margin: const EdgeInsets.all(20),
-                ).animate(onPlay: (controller) => controller.repeat()).
-                moveY(begin: 0,
-                    end: MediaQuery.of(context).size.height - 320,duration: 2000.ms)
-              ],
-            ),
+          _buildCaptureButton(isDark, theme),
+          _buildActionButton(
+            icon: Icons.photo_library,
+            label: 'Gallery',
+            onTap: () async {
+              XFile? xfile = await imagePicker.pickImage(source: ImageSource.gallery);
+              if (xfile != null) {
+                File image = File(xfile.path);
+                processImage(image);
+              }
+            },
+            isDark: isDark,
+            theme: theme,
           ),
-          Card(
-            color: Colors.blueAccent,
-            child: SizedBox(
-              height: 100,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InkWell(
-                    child: const Icon(
-                      Icons.rotate_left,
-                      size: 35,
-                      color: Colors.white,
-                    ),
-                    onTap: () {},
-                  ),
-                  InkWell(
-                    child: const Icon(
-                      Icons.camera,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                    onTap: () async {
-                      await controller.takePicture().then((value) {
-                        File image = File(value.path);
-                        processImage(image);
-                                            });
-                    },
-                  ),
-                  InkWell(
-                    child: const Icon(
-                      Icons.image_outlined,
-                      size: 35,
-                      color: Colors.white,
-                    ),
-                    onTap: () async {
-                      XFile? xfile = await imagePicker.pickImage(
-                          source: ImageSource.gallery);
-                      if (xfile != null) {
-                        File image = File(xfile.path);
-                        processImage(image);
-                      }
-                    },
-                  )
-                ],
-              ),
-            ),
-          )
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required bool isDark,
+    required ThemeData theme,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.grey.shade800.withOpacity(0.3)
+                  : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, size: 28, color: theme.primaryColor),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark ? Colors.grey : Colors.grey.shade700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCaptureButton(bool isDark, ThemeData theme) {
+    return InkWell(
+      onTap: () async {
+        await controller.takePicture().then((value) {
+          File image = File(value.path);
+          processImage(image);
+        });
+      },
+      child: Container(
+        width: 70,
+        height: 70,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: theme.primaryColor.withOpacity(0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.camera_alt, color: Colors.white, size: 32),
       ),
     );
   }
@@ -244,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => ImageCropper(
-          image: image.readAsBytesSync(), // <-- Uint8List of image
+          image: image.readAsBytesSync(),
         ),
       ),
     );
@@ -257,8 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return CardScanner(image);
       }));
-    }
-    else if (enhance) {
+    } else if (enhance) {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return EnhanceScreen(image);
       }));
