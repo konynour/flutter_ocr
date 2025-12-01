@@ -21,6 +21,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ImagePicker imagePicker;
   late List<CameraDescription> _cameras;
+
+  late CameraController controller;
+  bool isInit = false;
+
+  int _selectedCameraIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -28,28 +34,34 @@ class _HomeScreenState extends State<HomeScreen> {
     initalizeCamera();
   }
 
-  late CameraController controller;
-  bool isInit = false;
-  initalizeCamera() async {
+  Future<void> initalizeCamera() async {
     _cameras = await availableCameras();
-    controller = CameraController(_cameras[0], ResolutionPreset.max);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        isInit = true;
-      });
-    }).catchError((Object e) {
-      if (e is CameraException) {
-        switch (e.code) {
-          case 'CameraAccessDenied':
-            break;
-          default:
-            break;
-        }
-      }
-    });
+
+    controller = CameraController(
+      _cameras[_selectedCameraIndex],
+      ResolutionPreset.max,
+    );
+
+    await controller.initialize();
+    if (mounted) {
+      setState(() => isInit = true);
+    }
+  }
+
+  Future<void> flipCamera() async {
+    if (_cameras.length < 2) return;
+
+    _selectedCameraIndex = (_selectedCameraIndex == 0) ? 1 : 0;
+
+    controller = CameraController(
+      _cameras[_selectedCameraIndex],
+      ResolutionPreset.max,
+    );
+
+    await controller.initialize();
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   bool scan = false;
@@ -69,19 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Header with Theme Toggle
               _buildHeader(context, themeProvider, isDark),
               const SizedBox(height: 20),
-
-              // Mode Selection Cards
               _buildModeSelector(isDark, theme),
               const SizedBox(height: 20),
-
-              // Camera Preview
               Expanded(child: _buildCameraPreview(isDark, theme)),
               const SizedBox(height: 20),
-
-              // Action Buttons
               _buildActionButtons(isDark, theme),
             ],
           ),
@@ -212,9 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: isSelected
-                ? theme.primaryColor
-                : Colors.transparent,
+            color: isSelected ? theme.primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -330,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildActionButton(
             icon: Icons.flip_camera_ios,
             label: 'Flip',
-            onTap: () {},
+            onTap: flipCamera,
             isDark: isDark,
             theme: theme,
           ),
