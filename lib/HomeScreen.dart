@@ -1,14 +1,20 @@
-// HomeScreen.dart (Enhanced Version)
+// HomeScreen.dart (Enhanced + Export)
 import 'dart:io';
+
 import 'package:camera/camera.dart';
-import 'package:flutter_ocr/CardScanner.dart';
-import 'package:flutter_ocr/RecognizerScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
+
+import 'CardScanner.dart';
 import 'EnhanceScreen.dart';
+import 'RecognizerScreen.dart';
 import 'ThemeProvider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,6 +32,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isInit = false;
 
   int _selectedCameraIndex = 0;
+
+  // Last captured or picked image (used for export)
+  File? _lastImage;
+
+  // To avoid multiple export actions at the same time
+  bool _isExporting = false;
+
+  bool scan = false;
+  bool recognize = true;
+  bool enhance = false;
 
   @override
   void initState() {
@@ -64,9 +80,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  bool scan = false;
-  bool recognize = true;
-  bool enhance = false;
+  @override
+  void dispose() {
+    if (isInit) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ThemeProvider themeProvider, bool isDark) {
+  Widget _buildHeader(
+      BuildContext context, ThemeProvider themeProvider, bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -107,14 +128,17 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             Text(
               'Scan, Recognize & Enhance',
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withOpacity(0.6),
               ),
             ),
           ],
@@ -339,10 +363,18 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           _buildCaptureButton(isDark, theme),
           _buildActionButton(
+            icon: Icons.picture_as_pdf,
+            label: 'Export',
+            onTap: _showExportOptions,
+            isDark: isDark,
+            theme: theme,
+          ),
+          _buildActionButton(
             icon: Icons.photo_library,
             label: 'Gallery',
             onTap: () async {
-              XFile? xfile = await imagePicker.pickImage(source: ImageSource.gallery);
+              XFile? xfile =
+                  await imagePicker.pickImage(source: ImageSource.gallery);
               if (xfile != null) {
                 File image = File(xfile.path);
                 processImage(image);
@@ -395,6 +427,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCaptureButton(bool isDark, ThemeData theme) {
     return InkWell(
       onTap: () async {
+        if (!isInit) return;
         await controller.takePicture().then((value) {
           File image = File(value.path);
           processImage(image);
@@ -423,7 +456,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // This is called after picking or capturing an image
   processImage(File image) async {
+    _lastImage = image;
+
     final editedImage = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -432,7 +468,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+
     image.writeAsBytes(editedImage);
+    _lastImage = image;
+
     if (recognize) {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return RecognizerScreen(image);
@@ -445,6 +484,183 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
         return EnhanceScreen(image);
       }));
+    }
+  }
+
+  // ===================== Export Logic =====================
+
+  void _showExportOptions() {
+    if (_lastImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please capture or pick an image first.'),
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Export options',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf),
+                title: const Text('Export as PDF (image)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _exportAsPdfWithImage();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.description),
+                title: const Text('Export as PDF (recognized text)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _exportRecognizedTextAsPdf();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.text_snippet),
+                title: const Text('Export as TXT (recognized text)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _exportRecognizedTextAsTxt();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _exportAsPdfWithImage() async {
+    if (_lastImage == null || _isExporting) return;
+
+    try {
+      setState(() => _isExporting = true);
+
+      final pdf = pw.Document();
+      final imageBytes = await _lastImage!.readAsBytes();
+      final pdfImage = pw.MemoryImage(imageBytes);
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Center(
+              child: pw.Image(pdfImage),
+            );
+          },
+        ),
+      );
+
+      final dir = await getTemporaryDirectory();
+      final filePath =
+          '${dir.path}/ocr_export_image_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(await pdf.save());
+
+      await Share.shareXFiles([XFile(file.path)], text: 'OCR image PDF export');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
+  }
+
+  Future<void> _exportRecognizedTextAsTxt() async {
+    if (_lastImage == null || _isExporting) return;
+
+    try {
+      setState(() => _isExporting = true);
+
+      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      final inputImage = InputImage.fromFile(_lastImage!);
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      await textRecognizer.close();
+
+      final dir = await getTemporaryDirectory();
+      final filePath =
+          '${dir.path}/ocr_export_${DateTime.now().millisecondsSinceEpoch}.txt';
+      final file = File(filePath);
+      await file.writeAsString(recognizedText.text);
+
+      await Share.shareXFiles([XFile(file.path)], text: 'OCR text TXT export');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
+  }
+
+  Future<void> _exportRecognizedTextAsPdf() async {
+    if (_lastImage == null || _isExporting) return;
+
+    try {
+      setState(() => _isExporting = true);
+
+      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      final inputImage = InputImage.fromFile(_lastImage!);
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      await textRecognizer.close();
+
+      final pdf = pw.Document();
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Padding(
+              padding: const pw.EdgeInsets.all(24),
+              child: pw.Text(
+                recognizedText.text.isEmpty
+                    ? 'No text recognized.'
+                    : recognizedText.text,
+                style: const pw.TextStyle(fontSize: 12),
+              ),
+            );
+          },
+        ),
+      );
+
+      final dir = await getTemporaryDirectory();
+      final filePath =
+          '${dir.path}/ocr_export_text_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(await pdf.save());
+
+      await Share.shareXFiles([XFile(file.path)], text: 'OCR text PDF export');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
     }
   }
 }
