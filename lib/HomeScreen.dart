@@ -138,10 +138,11 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         // Left Side (Title)
         Image.asset(
-          "images/logo.png",
-          height: 85,
-          width: 85,
+          "images/icon.png",
+          height: 70,
+          width: 70,
         ),
+        const SizedBox(width: 14),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
