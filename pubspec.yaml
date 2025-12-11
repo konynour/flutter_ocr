@@ -2,37 +2,63 @@ name: flutter_ocr
 description: "Document Scanner App"
 publish_to: 'none'
 version: 1.0.0+1
+
 environment:
   sdk: '>=3.2.6 <4.0.0'
+
 dependencies:
   flutter:
     sdk: flutter
+  
+  # UI Components
   cupertino_icons: ^1.0.8
-  google_mlkit_text_recognition: ^0.15.0
-  image_picker: ^1.2.1
-  camera: ^0.11.3
-  image_editor_plus: ^1.0.8
+  provider: ^6.1.1
   flutter_animate: ^4.5.2
+  
+  # Camera & Image Picking
+  camera: ^0.11.3
+  image_picker: ^1.2.1
+  
+  # Image Processing
   image: ^4.5.4
-  google_mlkit_entity_extraction: ^0.15.1
   crop_your_image: ^2.0.0
   image_gallery_saver_plus: ^4.0.1
-  provider: ^6.1.1
-  pdf: ^3.11.3
-  path_provider: ^2.1.5
-  share_plus: ^12.0.1
+  
+  # ML Kit - Google Services
+  google_mlkit_text_recognition: ^0.15.0
+  google_mlkit_entity_extraction: ^0.15.1
+  google_mlkit_barcode_scanning: ^0.14.1
+  
+  # Text to Speech & Translation
   flutter_tts: ^4.2.3
   translator: ^1.0.4+1
-  google_mlkit_barcode_scanning: ^0.14.1
+  
+  # File Operations
+  path_provider: ^2.1.5
+  pdf: ^3.11.3
+  share_plus: ^12.0.1
+  
+  # Utilities
   url_launcher: ^6.3.2
+  
+  # Add missing dependency for image_editor_plus
+  reorderables: ^0.6.0
+  
+  # OPTIONAL: If you still want image editor features
+  # Comment this out if causing issues
+  image_editor_plus: ^1.0.8
+
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
 flutter_icons:
   android: true
   ios: true
   image_path: "images/icon.png"
+
 flutter:
   uses-material-design: true
   assets:

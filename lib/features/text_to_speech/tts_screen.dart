@@ -1,12 +1,12 @@
 // TtsScreen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_ocr/core/providers/theme_provider.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:translator/translator.dart';
 import 'package:provider/provider.dart';
-import 'ThemeProvider.dart';
 
 class TtsScreen extends StatefulWidget {
   final File image;
@@ -129,7 +129,8 @@ class _TtsScreenState extends State<TtsScreen> {
     final isDark = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F7FA),
+      backgroundColor:
+          isDark ? const Color(0xFF121212) : const Color(0xFFF5F7FA),
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.blueAccent,
         title: const Text(
@@ -164,7 +165,7 @@ class _TtsScreenState extends State<TtsScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -235,7 +236,7 @@ class _TtsScreenState extends State<TtsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -252,11 +253,11 @@ class _TtsScreenState extends State<TtsScreen> {
                 colors: isDark
                     ? [
                         const Color(0xFF42A5F5),
-                        const Color(0xFF42A5F5).withOpacity(0.8),
+                        const Color(0xFF42A5F5).withValues(alpha: 0.8),
                       ]
                     : [
                         Colors.blueAccent,
-                        Colors.blueAccent.withOpacity(0.8),
+                        Colors.blueAccent.withValues(alpha: 0.8),
                       ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -289,7 +290,7 @@ class _TtsScreenState extends State<TtsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -330,7 +331,7 @@ class _TtsScreenState extends State<TtsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -348,16 +349,17 @@ class _TtsScreenState extends State<TtsScreen> {
                     colors: isDark
                         ? [
                             const Color(0xFF42A5F5),
-                            const Color(0xFF42A5F5).withOpacity(0.7),
+                            const Color(0xFF42A5F5).withValues(alpha: 0.7),
                           ]
                         : [
                             Colors.blueAccent,
-                            Colors.blueAccent.withOpacity(0.7),
+                            Colors.blueAccent.withValues(alpha: 0.7),
                           ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.translate, color: Colors.white, size: 24),
+                child:
+                    const Icon(Icons.translate, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 12),
               Text(
@@ -376,7 +378,7 @@ class _TtsScreenState extends State<TtsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.grey.shade900.withOpacity(0.3)
+                  ? Colors.grey.shade900.withValues(alpha: 0.3)
                   : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -456,7 +458,7 @@ class _TtsScreenState extends State<TtsScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),
@@ -474,16 +476,17 @@ class _TtsScreenState extends State<TtsScreen> {
                     colors: isDark
                         ? [
                             const Color(0xFF42A5F5),
-                            const Color(0xFF42A5F5).withOpacity(0.7),
+                            const Color(0xFF42A5F5).withValues(alpha: 0.7),
                           ]
                         : [
                             Colors.blueAccent,
-                            Colors.blueAccent.withOpacity(0.7),
+                            Colors.blueAccent.withValues(alpha: 0.7),
                           ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.record_voice_over, color: Colors.white, size: 24),
+                child: const Icon(Icons.record_voice_over,
+                    color: Colors.white, size: 24),
               ),
               const SizedBox(width: 12),
               Text(
@@ -502,7 +505,7 @@ class _TtsScreenState extends State<TtsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.grey.shade900.withOpacity(0.3)
+                  ? Colors.grey.shade900.withValues(alpha: 0.3)
                   : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -530,7 +533,8 @@ class _TtsScreenState extends State<TtsScreen> {
                       ),
                     )
                     .toList(),
-                onChanged: (value) => setState(() => selectedTtsLanguage = value!),
+                onChanged: (value) =>
+                    setState(() => selectedTtsLanguage = value!),
               ),
             ),
           ),

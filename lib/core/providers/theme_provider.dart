@@ -1,6 +1,5 @@
 // ThemeProvider.dart
 import 'package:flutter/material.dart';
-
 class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false;
 
@@ -20,7 +19,7 @@ class ThemeProvider extends ChangeNotifier {
   static const Color lightBackground = Color(0xFFF5F7FA);
   static const Color lightSurface = Colors.white;
   static const Color lightCardColor = Color(0xFFFFFFFF);
-  
+
   // Dark Theme Colors
   static const Color darkPrimary = Color(0xFF42A5F5);
   static const Color darkPrimaryVariant = Color(0xFF1E88E5);
@@ -55,7 +54,7 @@ class ThemeProvider extends ChangeNotifier {
     cardTheme: CardThemeData(
       color: lightCardColor,
       elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -100,7 +99,7 @@ class ThemeProvider extends ChangeNotifier {
     cardTheme: CardThemeData(
       color: darkCardColor,
       elevation: 8,
-      shadowColor: Colors.black.withOpacity(0.3),
+      shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),

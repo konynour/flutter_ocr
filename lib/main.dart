@@ -1,8 +1,8 @@
 // main.dart (Enhanced Version)
 import 'package:flutter/material.dart';
+import 'package:flutter_ocr/core/providers/theme_provider.dart';
+import 'package:flutter_ocr/features/home/home_screen.dart';
 import 'package:provider/provider.dart';
-import 'ThemeProvider.dart';
-import 'HomeScreen.dart';
 
 void main() {
   runApp(
