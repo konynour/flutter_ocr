@@ -409,6 +409,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
+**Yosef Elsersy**
+- GitHub: [@yosefelsersy](https://github.com/YosefElsersy)
+- Project Link: [https://github.com/konynour/flutter_ocr](https://github.com/konynour/flutter_ocr)
+
 **Nour Kony**
 - GitHub: [@konynour](https://github.com/konynour)
 - Project Link: [https://github.com/konynour/flutter_ocr](https://github.com/konynour/flutter_ocr)
