@@ -123,23 +123,23 @@ lib/
 ├── main.dart                          # App entry point
 ├── core/                              # Core app functionality
 │   ├── providers/
-│   │   └── theme_provider.dart        # Theme state management
+│   │   └── theme_provider.dart           
 │   ├── constants/
-│   │   └── app_constants.dart         # App-wide constants
+│   │   └── app_constants.dart         
 │   └── utils/
-│       └── helpers.dart               # Helper functions & utilities
+│       └── helpers.dart               
 │
-├── features/                          # Feature modules
+├── features/                       
 │   ├── home/
-│   │   └── home_screen.dart           # Main camera & mode selection
+│   │   └── home_screen.dart           
 │   ├── text_recognition/
-│   │   └── recognizer_screen.dart     # Text OCR screen
+│   │   └── recognizer_screen.dart     
 │   ├── card_scanner/
-│   │   └── card_scanner.dart          # Business card scanning
+│   │   └── card_scanner.dart         
 │   ├── qr_scanner/
-│   │   └── scan_qr.dart               # QR/Barcode scanning
+│   │   └── scan_qr.dart               
 │   ├── image_enhancement/
-│   │   └── enhance_screen.dart        # Image adjustments
+│   │   └── enhance_screen.dart       
 │   └── text_to_speech/
 │       └── tts_screen.dart            # TTS & Translation
 │
