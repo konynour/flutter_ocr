@@ -1,23 +1,25 @@
-// EnhanceScreen.dart (Enhanced Version)
+// EnhanceScreen.dart (Fixed Version)
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
-import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:provider/provider.dart';
-import 'ThemeProvider.dart';
+import '../../core/providers/theme_provider.dart';
 
 class EnhanceScreen extends StatefulWidget {
   final File image;
-  EnhanceScreen(this.image, {super.key});
+  const EnhanceScreen(this.image, {super.key});
 
   @override
-  State<EnhanceScreen> createState() => _RecognizerScreenState();
+  State<EnhanceScreen> createState() => _EnhanceScreenState();
 }
 
-class _RecognizerScreenState extends State<EnhanceScreen> {
+class _EnhanceScreenState extends State<EnhanceScreen> {
   late img.Image inputImage;
+  double contrast = 150;
+  double brightness = 1;
+
   @override
   void initState() {
     super.initState();
@@ -25,17 +27,12 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
     enhanceImage();
   }
 
-  enhanceImage() {
+  void enhanceImage() {
     img.Image temp = img.decodeImage(widget.image.readAsBytesSync())!;
     inputImage = img.adjustColor(temp, brightness: brightness);
     inputImage = img.contrast(inputImage, contrast: contrast);
-    setState(() {
-      inputImage;
-    });
+    setState(() {});
   }
-
-  double contrast = 150;
-  double brightness = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -54,47 +51,51 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
         ),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_vintage),
-            tooltip: 'Apply Filters',
-            onPressed: () async {
-              final editedImage = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ImageFilters(
-                    image: Uint8List.fromList(img.encodePng(inputImage)),
-                  ),
-                ),
-              );
-              inputImage = img.decodeImage(editedImage)!;
-              setState(() {
-                inputImage;
-              });
-            },
-          ),
+          // Temporarily removed filter button until dependency is fixed
+          // IconButton(
+          //   icon: const Icon(Icons.filter_vintage),
+          //   tooltip: 'Apply Filters',
+          //   onPressed: () async {
+          //     // Filter functionality
+          //   },
+          // ),
           IconButton(
             icon: const Icon(Icons.save_alt),
             tooltip: 'Save Image',
             onPressed: () async {
-              final result = await ImageGallerySaverPlus.saveImage(
-                  Uint8List.fromList(img.encodePng(inputImage)));
-              print(result);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text('Image saved to gallery!'),
-                    ],
-                  ),
-                  backgroundColor: Colors.green,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
+              try {
+                final result = await ImageGallerySaverPlus.saveImage(
+                    Uint8List.fromList(img.encodePng(inputImage)));
+                print(result);
+                
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.white),
+                          SizedBox(width: 12),
+                          Text('Image saved to gallery!'),
+                        ],
+                      ),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error saving image: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
           ),
           IconButton(
@@ -115,7 +116,7 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -140,8 +141,8 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      theme.primaryColor.withOpacity(0.1),
-                      theme.primaryColor.withOpacity(0.05),
+                      theme.primaryColor.withValues(alpha: 0.1),
+                      theme.primaryColor.withValues(alpha: 0.05),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -174,10 +175,9 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                 max: 200,
                 divisions: 12,
                 onChanged: (v) {
-                  contrast = v;
-                  enhanceImage();
                   setState(() {
-                    contrast;
+                    contrast = v;
+                    enhanceImage();
                   });
                 },
               ),
@@ -194,10 +194,9 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                 max: 10,
                 divisions: 10,
                 onChanged: (v) {
-                  brightness = v;
-                  enhanceImage();
                   setState(() {
-                    brightness;
+                    brightness = v;
+                    enhanceImage();
                   });
                 },
               ),
@@ -223,9 +222,8 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark
-                        ? Colors.grey.shade800
-                        : Colors.grey.shade200,
+                    backgroundColor:
+                        isDark ? Colors.grey.shade800 : Colors.grey.shade200,
                     foregroundColor: isDark ? Colors.white : Colors.black87,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
@@ -260,7 +258,7 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -279,7 +277,7 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                       gradient: LinearGradient(
                         colors: [
                           theme.primaryColor,
-                          theme.primaryColor.withOpacity(0.7),
+                          theme.primaryColor.withValues(alpha: 0.7),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -301,7 +299,7 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: theme.primaryColor.withOpacity(0.1),
+                  color: theme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -322,7 +320,7 @@ class _RecognizerScreenState extends State<EnhanceScreen> {
               inactiveTrackColor:
                   isDark ? Colors.grey.shade800 : Colors.grey.shade300,
               thumbColor: theme.primaryColor,
-              overlayColor: theme.primaryColor.withOpacity(0.2),
+              overlayColor: theme.primaryColor.withValues(alpha: 0.2),
               trackHeight: 6,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),

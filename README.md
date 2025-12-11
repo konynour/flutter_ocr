@@ -1,204 +1,438 @@
+# Flutter OCR Scanner App 📱
 
-```markdown
-# Flutter OCR App
+A complete Flutter application for extracting, enhancing, translating, and converting text using **Google ML Kit**, **TTS**, **QR/Barcode Scanning**, and **PDF Exporting**.  
 
-A complete Flutter application for extracting, enhancing, translating, and converting text using **Google ML Kit**, **TTS**, **QR Scanning**, and **PDF Exporting**.  
-The app provides a smooth end-to-end workflow: capture → process → recognize → translate → read aloud → export.
+The app provides a smooth end-to-end workflow: **capture → process → recognize → translate → read aloud → export**.
 
-The project is modular, screen-based, and designed for scalability.
+The project follows a **feature-based architecture** for better organization, scalability, and maintainability.
 
 ---
 
 ## 🚀 Features
 
-### 🔍 OCR & Recognition
-- Extract text from images using Google ML Kit  
-- Supports multilingual OCR (Arabic, English, Chinese, Japanese, Korean, etc.)  
-- Live preview scanning  
-- Auto-processing pipeline (crop → enhance → recognize)
+### 🔍 OCR & Text Recognition
+- Extract text from images using Google ML Kit
+- Supports multilingual OCR (Arabic, English, French, Spanish, German, etc.)
+- Live camera preview with scanning animation
+- High accuracy text recognition with ML Kit Latin script support
+- Copy recognized text to clipboard
+- Display line count and detection statistics
+
+### 💳 Card Scanner
+- Extract entities from business cards and documents
+- Automatic detection of:
+  - Phone numbers
+  - Email addresses
+  - Physical addresses
+  - URLs and websites
+  - Names and other entities
+- One-tap copy functionality for each detected entity
+- Smart icon mapping for different entity types
 
 ### 🖼 Image Enhancement
-- Adjust contrast, brightness, sharpen  
-- Grayscale filter  
-- Enhance images before OCR for better accuracy
+- Adjust contrast (80-200 range)
+- Modify brightness (1-10 scale)
+- Real-time preview of adjustments
+- Save enhanced images to gallery
+- Reset to default values
+- Visual sliders with precise value display
 
 ### 🌐 Translation
-- Translate text between multiple languages  
-- Smooth UI for switching source/target languages
+- Translate recognized text between multiple languages:
+  - Arabic, English, French, Spanish, German
+  - Italian, Portuguese, Russian, Chinese, Japanese
+- Smooth UI for switching languages
+- Preserve formatting in translations
+- Copy translated text to clipboard
 
 ### 🔊 Text-to-Speech (TTS)
-- Read recognized or translated text aloud  
-- Supports multiple voices (depending on platform)
+- Read recognized or translated text aloud
+- Multi-language voice support:
+  - English (US), Arabic (SA), French (FR), Spanish (ES), German (DE)
+- Adjustable speech rate and pitch
+- Play/Stop controls with visual feedback
+- Works with both original and translated text
 
-### 🔦 QR Scanner
-- Scan QR codes from live camera or static images  
-- Detect URLs, text, WiFi, geo-locations, and more  
-- Auto-open URLs with validation
+### 📷 QR & Barcode Scanner
+- Scan QR codes and barcodes from images
+- Supports multiple barcode types:
+  - QR Codes, URLs, WiFi credentials
+  - Email addresses, Phone numbers, SMS
+  - Contact information, Calendar events
+  - Product barcodes (EAN, UPC, etc.)
+- One-tap copy functionality
+- Smart type detection with custom icons
 
 ### 📄 Export System
-- Export recognized text as a clean PDF  
-- Export images as PDF  
-- Share files or save locally  
+- **Export as PDF (Image)**: Preserve original image in PDF format
+- **Export as PDF (Text)**: Clean text-only PDF document
+- **Export as TXT**: Plain text file export
+- Share exported files via system share sheet
+- Automatic file naming with timestamps
 - Temporary file management
 
-### 🎨 UI / UX
-- Minimal and functional interface  
-- Smooth animations (flutter_animate)  
-- Full dark mode support  
-- Enhanced screen-based workflow
+### 🎨 Modern UI/UX
+- Beautiful Material Design 3 interface
+- Full dark mode support with custom color schemes
+- Smooth animations using flutter_animate
+- Glassmorphism effects and gradient accents
+- Responsive design for all screen sizes
+- Consistent design language across all screens
+- Custom themed components and widgets
 
 ---
 
-## 📦 Technologies Used
+## 📦 Technologies & Packages
 
-- **Flutter / Dart**
-- **Google ML Kit (Text Recognition + Barcode Scanning)**
-- **ImageEditorPlus**
-- **TTS Plugins**
-- **Provider (State Management)**
-- **url_launcher**
-- **camera**
-- **flutter_animate**
+### Core
+- **Flutter SDK** (>=3.2.6 <4.0.0)
+- **Dart**
+- **Provider** (State Management)
+
+### ML Kit & Recognition
+- **google_mlkit_text_recognition** (^0.15.0) - Text OCR
+- **google_mlkit_entity_extraction** (^0.15.1) - Entity detection
+- **google_mlkit_barcode_scanning** (^0.14.1) - QR/Barcode scanning
+
+### Camera & Image Processing
+- **camera** (^0.11.3) - Camera access
+- **image_picker** (^1.2.1) - Gallery picker
+- **image** (^4.5.4) - Image manipulation
+- **crop_your_image** (^2.0.0) - Image cropping
+- **image_gallery_saver_plus** (^4.0.1) - Save to gallery
+
+### Text Processing
+- **flutter_tts** (^4.2.3) - Text-to-Speech
+- **translator** (^1.0.4+1) - Translation service
+
+### File Operations
+- **path_provider** (^2.1.5) - File system paths
+- **pdf** (^3.11.3) - PDF generation
+- **share_plus** (^12.0.1) - Share functionality
+
+### UI/UX
+- **flutter_animate** (^4.5.2) - Animations
+- **url_launcher** (^6.3.2) - URL handling
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure (Feature-Based Architecture)
 
 ```
-
 lib/
-├── main.dart
-├── screens/
+├── main.dart                          # App entry point
+├── core/                              # Core app functionality
+│   ├── providers/
+│   │   └── theme_provider.dart           
+│   ├── constants/
+│   │   └── app_constants.dart         
+│   └── utils/
+│       └── helpers.dart               
+│
+├── features/                       
 │   ├── home/
-│   ├── scanner/
-│   ├── qr_scan/
-│   ├── recognizer/
-│   ├── enhance/
-│   ├── tts/
-│   └── export/
-├── services/
-│   ├── ocr_service.dart
-│   ├── qr_service.dart
-│   ├── translation_service.dart
-│   ├── tts_service.dart
-│   └── pdf_service.dart
-├── providers/
-│   ├── theme_provider.dart
-│   ├── app_state_provider.dart
-│   └── image_provider.dart
-└── widgets/
-├── buttons/
-├── dialogs/
-└── custom_components/
+│   │   └── home_screen.dart           
+│   ├── text_recognition/
+│   │   └── recognizer_screen.dart     
+│   ├── card_scanner/
+│   │   └── card_scanner.dart         
+│   ├── qr_scanner/
+│   │   └── scan_qr.dart               
+│   ├── image_enhancement/
+│   │   └── enhance_screen.dart       
+│   └── text_to_speech/
+│       └── tts_screen.dart            # TTS & Translation
+│
+└── shared/                            # Shared components
+    ├── widgets/
+    │   ├── loading_indicator.dart     # Reusable loading widget
+    │   ├── text_card.dart             # Text display card
+    │   └── custom_button.dart         # Custom button widgets
+    └── models/
+        ├── entity_model.dart          # Entity data model
+        └── barcode_model.dart         # Barcode data model
+```
 
-````
-
-> *Structure may expand as architecture improves.*
+### Architecture Benefits
+✅ **Feature Isolation**: Each feature is self-contained  
+✅ **Reusability**: Shared widgets and models reduce duplication  
+✅ **Scalability**: Easy to add new features without affecting existing code  
+✅ **Maintainability**: Clear structure makes debugging easier  
+✅ **Team Collaboration**: Multiple developers can work on different features  
+✅ **Testing**: Isolated features are easier to test
 
 ---
 
 ## 🔧 Installation & Setup
 
-### 1. Clone the repository
+### 1. Prerequisites
+- Flutter SDK (>=3.2.6)
+- Android Studio / VS Code
+- Android SDK (for Android development)
+- Xcode (for iOS development)
+
+### 2. Clone the repository
 ```bash
 git clone https://github.com/konynour/flutter_ocr.git
 cd flutter_ocr
-````
+```
 
-### 2. Install dependencies
-
+### 3. Install dependencies
 ```bash
+flutter clean
 flutter pub get
 ```
 
-### 3. Android Setup
+### 4. Android Setup
 
-Edit:
-`android/app/build.gradle`
+#### Minimum SDK Version
+Edit `android/app/build.gradle`:
+```gradle
+android {
+    defaultConfig {
+        minSdkVersion 21  // Required for ML Kit
+        targetSdkVersion 34
+    }
+}
+```
 
-Add ML Kit dependencies:
+#### Permissions
+Ensure these are in `android/app/src/main/AndroidManifest.xml`:
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.INTERNET" />
+```
 
+#### Optional: ML Kit Language Models
+If you need additional language support, add to `android/app/build.gradle`:
 ```gradle
 dependencies {
-    implementation 'com.google.mlkit:text-recognition-chinese:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-korean:16.0.0'
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
+    // Add other language models if needed
+    // implementation 'com.google.mlkit:text-recognition-chinese:16.0.0'
+    // implementation 'com.google.mlkit:text-recognition-japanese:16.0.0'
+    // implementation 'com.google.mlkit:text-recognition-korean:16.0.0'
 }
+```
+
+### 5. iOS Setup
+
+Add to `ios/Runner/Info.plist`:
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Camera access is required for scanning documents</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Photo library access is required to select images</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Photo library access is required to save images</string>
 ```
 
 ---
 
 ## ▶️ Run the App
 
-### Debug:
-
+### Debug Mode:
 ```bash
 flutter run
 ```
 
-### Release:
-
+### Release Mode:
 ```bash
 flutter run --release
 ```
 
+### Specific Device:
+```bash
+flutter devices
+flutter run -d <device-id>
+```
+
 ---
 
-## 🛠 Build APK
+## 🛠 Build APK/AAB
 
+### Build APK (for distribution):
 ```bash
 flutter build apk --release
 ```
+Output: `build/app/outputs/flutter-apk/app-release.apk`
 
-Output:
-
+### Build App Bundle (for Play Store):
+```bash
+flutter build appbundle --release
 ```
-build/app/outputs/flutter-apk/app-release.apk
+Output: `build/app/outputs/bundle/release/app-release.aab`
+
+### Build for specific architecture:
+```bash
+flutter build apk --split-per-abi
 ```
 
 ---
 
-## 🐞 Known Issues / Bugs (To Be Fixed)
+## 📱 App Workflow
 
-### 🔊 **TTS Screen**
-
-* After translating from English → Arabic,
-  pressing **Play** for English *still plays Arabic only*.
-* TTS refuses to switch languages after Arabic playback.
-  ➡️ *Needs language-state cleanup + TTS engine reset before replay.*
-
----
-
-### 🧭 **QR Screen**
-
-* `geo:` parameter is **not supported** by the ML Kit barcode library.
-* Code is currently commented out.
-  ➡️ *Requires custom parser or separate geo-URL handler.*
+1. **Home Screen**: Choose scanning mode (Card, Text, QR, Enhance)
+2. **Capture/Select**: Use camera or pick from gallery
+3. **Process**: Image is automatically processed
+4. **Results**: View recognized text/entities/barcodes
+5. **Actions**: 
+   - Copy to clipboard
+   - Translate (if applicable)
+   - Read aloud with TTS
+   - Export as PDF/TXT
+   - Share or save
 
 ---
 
-### 🏗 **Architecture**
+## 🎨 Customization
 
-* Current architecture needs to be cleaner and more modular.
-* Many screens contain repetitive code.
-  ➡️ *Refactor into reusable components + shared services.*
+### Theme Configuration
+Edit `lib/core/providers/theme_provider.dart` to customize colors:
+```dart
+// Light Theme Colors
+static const Color lightPrimary = Color(0xFF2196F3);
+static const Color lightBackground = Color(0xFFF5F7FA);
+
+// Dark Theme Colors
+static const Color darkPrimary = Color(0xFF42A5F5);
+static const Color darkBackground = Color(0xFF121212);
+```
+
+### Constants
+Edit `lib/core/constants/app_constants.dart` for app-wide settings:
+```dart
+class AppConstants {
+  static const String appName = 'OCR Scanner';
+  static const double borderRadius = 16.0;
+  // Add your custom constants
+}
+```
 
 ---
 
-### 🔀 **Routing & Navigation**
+## 🐞 Known Issues & Roadmap
 
-* Missing dedicated routing file.
-* Navigation logic is scattered across screens.
-  ➡️ *Add `app_router.dart` with named routes and transitions.*
+### Current Known Issues
+
+#### 🔊 TTS Language Switching
+- **Issue**: After translating to Arabic, TTS continues playing in Arabic even when English is selected
+- **Cause**: TTS engine state not properly reset between language changes
+- **Workaround**: Restart the app to reset TTS state
+- **Fix Status**: 🔄 In Progress
+
+#### 📍 Geo Location Parsing
+- **Issue**: `geo:` URL format in QR codes not properly supported by ML Kit
+- **Cause**: ML Kit limitation + missing custom parser
+- **Workaround**: Code is commented out
+- **Fix Status**: 📋 Planned
+
+#### 🖼 Image Cropping
+- **Issue**: `image_editor_plus` package dependency conflict
+- **Cause**: Missing `reorderables` transitive dependency
+- **Workaround**: Cropping feature temporarily disabled
+- **Fix Status**: ✅ Alternative solution available (crop_your_image)
+
+### Roadmap
+
+#### Short Term (v1.1)
+- [ ] Fix TTS language switching bug
+- [ ] Implement image cropping with crop_your_image
+- [ ] Add proper routing with named routes
+- [ ] Improve error handling across all screens
+- [ ] Add loading states for all async operations
+
+#### Medium Term (v1.2)
+- [ ] Add OCR history feature
+- [ ] Implement batch processing
+- [ ] Add document scanning mode (multi-page)
+- [ ] Support for more barcode formats
+- [ ] Custom geo-location parser for QR codes
+- [ ] Add unit and widget tests
+
+#### Long Term (v2.0)
+- [ ] Cloud sync for OCR history
+- [ ] Advanced image filters
+- [ ] Handwriting recognition
+- [ ] Receipt/Invoice parsing
+- [ ] Multi-language UI support
+- [ ] Offline translation support
+- [ ] Custom ML model training
 
 ---
 
-## 🤝 Contributions
+## 🧪 Testing
 
-Pull requests are welcome!
-If you'd like to suggest improvements or fix bugs, feel free to fork the repository.
+### Run tests:
+```bash
+flutter test
+```
+
+### Test coverage:
+```bash
+flutter test --coverage
+```
+
+### Integration tests:
+```bash
+flutter drive --target=test_driver/app.dart
+```
 
 ---
 
+## 🤝 Contributing
 
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Contribution Guidelines
+- Follow the existing code style
+- Write clear commit messages
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👨‍💻 Author
+
+**Nour Kony**
+- GitHub: [@konynour](https://github.com/konynour)
+- Project Link: [https://github.com/konynour/flutter_ocr](https://github.com/konynour/flutter_ocr)
+
+---
+
+## 🙏 Acknowledgments
+
+- [Google ML Kit](https://developers.google.com/ml-kit) - Machine Learning APIs
+- [Flutter Team](https://flutter.dev) - Amazing framework
+- [pub.dev](https://pub.dev) - Package repository
+- All open-source contributors
+
+---
+
+## ⭐ Show Your Support
+
+If you find this project useful, please consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs
+- 💡 Suggesting new features
+- 🤝 Contributing to the code
+- 📢 Sharing with others
+
+---
+
+**Made with ❤️ using Flutter**

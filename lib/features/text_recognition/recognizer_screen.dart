@@ -2,9 +2,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_ocr/core/providers/theme_provider.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:provider/provider.dart';
-import 'ThemeProvider.dart';
 
 class RecognizerScreen extends StatefulWidget {
   final File image;
@@ -117,7 +117,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha:0.15),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -142,7 +142,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                    color: Colors.black.withValues(alpha:isDark ? 0.3 : 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -159,11 +159,11 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                         colors: isDark
                             ? [
                                 const Color(0xFF42A5F5),
-                                const Color(0xFF42A5F5).withOpacity(0.8),
+                                const Color(0xFF42A5F5).withValues(alpha:0.8),
                               ]
                             : [
                                 Colors.blueAccent,
-                                Colors.blueAccent.withOpacity(0.8),
+                                Colors.blueAccent.withValues(alpha:0.8),
                               ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -196,7 +196,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -240,7 +240,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.grey.shade900.withOpacity(0.3)
+                                  ? Colors.grey.shade900.withValues(alpha:0.3)
                                   : Colors.grey.shade50,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(

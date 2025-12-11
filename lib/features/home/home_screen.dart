@@ -1,22 +1,20 @@
-// HomeScreen.dart (Enhanced + Export + ScanQR)
+// HomeScreen.dart (Fixed Version)
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
-import 'TtsScreen.dart';
-import 'ScanQr.dart';
-import 'CardScanner.dart';
-import 'EnhanceScreen.dart';
-import 'RecognizerScreen.dart';
-import 'ThemeProvider.dart';
+import '../text_to_speech/tts_screen.dart';
+import '../qr_scanner/scan_qr.dart';
+import '../card_scanner/card_scanner.dart';
+import '../image_enhancement/enhance_screen.dart';
+import '../text_recognition/recognizer_screen.dart';
+import '../../core/providers/theme_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,10 +26,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ImagePicker imagePicker;
   late List<CameraDescription> _cameras;
-
   late CameraController controller;
   bool isInit = false;
-
   int _selectedCameraIndex = 0;
 
   // Last captured or picked image (used for export)
@@ -159,12 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
               'Scan, Recognize & Enhance',
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
               ),
             ),
           ],
         ),
-
         const Spacer(),
 
         // Dark / Light Button
@@ -174,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -199,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -320,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -361,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
               left: 0,
               right: 0,
               child: Container(
-                color: theme.primaryColor.withOpacity(0.9),
+                color: theme.primaryColor.withValues(alpha: 0.9),
                 height: 3,
                 margin: const EdgeInsets.symmetric(horizontal: 30),
               ).animate(onPlay: (controller) => controller.repeat()).moveY(
@@ -383,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -451,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.grey.shade800.withOpacity(0.3)
+                  ? Colors.grey.shade800.withValues(alpha: 0.3)
                   : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(16),
             ),
@@ -490,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: theme.primaryColor.withOpacity(0.35),
+                  color: theme.primaryColor.withValues(alpha: 0.35),
                   blurRadius: 14,
                   offset: const Offset(0, 5),
                 ),
@@ -516,20 +514,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // This is called after picking or capturing an image
-  processImage(File image) async {
+  void processImage(File image) {
     _lastImage = image;
 
-    final editedImage = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ImageCropper(
-          image: image.readAsBytesSync(),
-        ),
-      ),
-    );
-
-    image.writeAsBytes(editedImage);
-    _lastImage = image;
+    // Temporarily skip image cropping until dependency is fixed
+    // You can add crop_your_image package functionality here later
 
     if (recognize) {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
@@ -642,9 +631,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Share.shareXFiles([XFile(file.path)], text: 'OCR image PDF export');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isExporting = false);
@@ -672,9 +663,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Share.shareXFiles([XFile(file.path)], text: 'OCR text TXT export');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isExporting = false);
@@ -719,9 +712,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await Share.shareXFiles([XFile(file.path)], text: 'OCR text PDF export');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isExporting = false);

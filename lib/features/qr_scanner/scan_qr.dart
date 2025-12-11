@@ -2,10 +2,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_ocr/core/providers/theme_provider.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'ThemeProvider.dart';
 
 class ScanQR extends StatefulWidget {
   final File image;
@@ -116,7 +115,7 @@ class _ScanQRState extends State<ScanQR> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -137,9 +136,9 @@ class _ScanQRState extends State<ScanQR> {
                     gradient: LinearGradient(
                       colors: [
                         (isDark ? const Color(0xFF42A5F5) : Colors.blueAccent)
-                            .withOpacity(0.15),
+                            .withValues(alpha: 0.15),
                         (isDark ? const Color(0xFF42A5F5) : Colors.blueAccent)
-                            .withOpacity(0.05),
+                            .withValues(alpha: 0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -243,8 +242,8 @@ class _ScanQRState extends State<ScanQR> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                            color: Colors.black
+                                .withValues(alpha: isDark ? 0.3 : 0.08),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -273,12 +272,12 @@ class _ScanQRState extends State<ScanQR> {
                                               ? [
                                                   const Color(0xFF42A5F5),
                                                   const Color(0xFF42A5F5)
-                                                      .withOpacity(0.7),
+                                                      .withValues(alpha: 0.7),
                                                 ]
                                               : [
                                                   Colors.blueAccent,
                                                   Colors.blueAccent
-                                                      .withOpacity(0.7),
+                                                      .withValues(alpha: 0.7),
                                                 ],
                                         ),
                                         borderRadius: BorderRadius.circular(12),
@@ -327,7 +326,7 @@ class _ScanQRState extends State<ScanQR> {
                                       decoration: BoxDecoration(
                                         color: isDark
                                             ? Colors.grey.shade800
-                                                .withOpacity(0.5)
+                                                .withValues(alpha: 0.5)
                                             : Colors.grey.shade100,
                                         borderRadius: BorderRadius.circular(10),
                                       ),

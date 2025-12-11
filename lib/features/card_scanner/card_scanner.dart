@@ -2,10 +2,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_ocr/core/providers/theme_provider.dart';
 import 'package:google_mlkit_entity_extraction/google_mlkit_entity_extraction.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:provider/provider.dart';
-import 'ThemeProvider.dart';
 
 class CardScanner extends StatefulWidget {
   final File image;
@@ -25,7 +25,8 @@ class _RecognizerScreenState extends State<CardScanner> {
   void initState() {
     super.initState();
     textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-    entityExtractor = EntityExtractor(language: EntityExtractorLanguage.english);
+    entityExtractor =
+        EntityExtractor(language: EntityExtractorLanguage.english);
     doTextRecognition();
   }
 
@@ -91,7 +92,7 @@ class _RecognizerScreenState extends State<CardScanner> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -112,9 +113,9 @@ class _RecognizerScreenState extends State<CardScanner> {
                     gradient: LinearGradient(
                       colors: [
                         (isDark ? const Color(0xFF42A5F5) : Colors.blueAccent)
-                            .withOpacity(0.15),
+                            .withValues(alpha: 0.15),
                         (isDark ? const Color(0xFF42A5F5) : Colors.blueAccent)
-                            .withOpacity(0.05),
+                            .withValues(alpha: 0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -123,13 +124,17 @@ class _RecognizerScreenState extends State<CardScanner> {
                     children: [
                       Icon(
                         Icons.check_circle,
-                        color: isDark ? const Color(0xFF42A5F5) : Colors.blueAccent,
+                        color: isDark
+                            ? const Color(0xFF42A5F5)
+                            : Colors.blueAccent,
                       ),
                       const SizedBox(width: 12),
                       Text(
                         '${entitiesList.length} entities detected',
                         style: TextStyle(
-                          color: isDark ? const Color(0xFF42A5F5) : Colors.blueAccent,
+                          color: isDark
+                              ? const Color(0xFF42A5F5)
+                              : Colors.blueAccent,
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
@@ -137,7 +142,8 @@ class _RecognizerScreenState extends State<CardScanner> {
                     ],
                   ),
                 ),
-              if (!isLoading && entitiesList.isNotEmpty) const SizedBox(height: 16),
+              if (!isLoading && entitiesList.isNotEmpty)
+                const SizedBox(height: 16),
 
               // Loading or Entity List
               if (isLoading)
@@ -156,7 +162,9 @@ class _RecognizerScreenState extends State<CardScanner> {
                         'Scanning card...',
                         style: TextStyle(
                           fontSize: 16,
-                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -167,7 +175,8 @@ class _RecognizerScreenState extends State<CardScanner> {
                 Container(
                   padding: const EdgeInsets.all(40),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,
+                    color:
+                        isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -183,7 +192,9 @@ class _RecognizerScreenState extends State<CardScanner> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                          color: isDark
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade700,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -207,7 +218,8 @@ class _RecognizerScreenState extends State<CardScanner> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08),
+                            color: Colors.black
+                                .withValues(alpha: isDark ? 0.3 : 0.08),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -218,15 +230,17 @@ class _RecognizerScreenState extends State<CardScanner> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           onTap: () {
-                            Clipboard.setData(
-                                ClipboardData(text: entitiesList[position].value));
+                            Clipboard.setData(ClipboardData(
+                                text: entitiesList[position].value));
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Row(
                                   children: [
-                                    const Icon(Icons.check_circle, color: Colors.white),
+                                    const Icon(Icons.check_circle,
+                                        color: Colors.white),
                                     const SizedBox(width: 12),
-                                    Text("${entitiesList[position].name} copied!"),
+                                    Text(
+                                        "${entitiesList[position].name} copied!"),
                                   ],
                                 ),
                                 backgroundColor: Colors.green,
@@ -248,11 +262,13 @@ class _RecognizerScreenState extends State<CardScanner> {
                                       colors: isDark
                                           ? [
                                               const Color(0xFF42A5F5),
-                                              const Color(0xFF42A5F5).withOpacity(0.7),
+                                              const Color(0xFF42A5F5)
+                                                  .withValues(alpha: 0.7),
                                             ]
                                           : [
                                               Colors.blueAccent,
-                                              Colors.blueAccent.withOpacity(0.7),
+                                              Colors.blueAccent
+                                                  .withValues(alpha: 0.7),
                                             ],
                                     ),
                                     borderRadius: BorderRadius.circular(12),
@@ -266,10 +282,13 @@ class _RecognizerScreenState extends State<CardScanner> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        entitiesList[position].name.toUpperCase(),
+                                        entitiesList[position]
+                                            .name
+                                            .toUpperCase(),
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
@@ -284,7 +303,9 @@ class _RecognizerScreenState extends State<CardScanner> {
                                         entitiesList[position].value,
                                         style: TextStyle(
                                           fontSize: 16,
-                                          color: isDark ? Colors.white : Colors.black87,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -295,7 +316,8 @@ class _RecognizerScreenState extends State<CardScanner> {
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: isDark
-                                        ? Colors.grey.shade800.withOpacity(0.5)
+                                        ? Colors.grey.shade800
+                                            .withValues(alpha: 0.5)
                                         : Colors.grey.shade100,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
