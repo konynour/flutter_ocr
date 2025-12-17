@@ -38,6 +38,9 @@ dependencies:
   pdf: ^3.11.3
   share_plus: ^12.0.1
   
+  # Local Storage
+  shared_preferences: ^2.2.2
+  
   # Utilities
   url_launcher: ^6.3.2
   

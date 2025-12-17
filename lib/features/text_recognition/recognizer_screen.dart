@@ -1,10 +1,11 @@
-// RecognizerScreen.dart (Enhanced Version)
+// lib/features/text_recognition/recognizer_screen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_ocr/core/providers/theme_provider.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:provider/provider.dart';
+import '../../core/providers/theme_provider.dart';
+import '../image_enhancement/enhance_screen.dart';
 
 class RecognizerScreen extends StatefulWidget {
   final File image;
@@ -85,6 +86,15 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
     );
   }
 
+  void navigateToEnhance() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EnhanceScreen(widget.image),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -101,6 +111,11 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_fix_high),
+            tooltip: 'Enhance Image',
+            onPressed: navigateToEnhance,
+          ),
           IconButton(
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
             onPressed: themeProvider.toggleTheme,
@@ -305,27 +320,50 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
 
             const SizedBox(height: 20),
 
-            // Retry Button
+            // Action Buttons Row
             if (!isLoading)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: doTextRecognition,
-                  icon: const Icon(Icons.refresh, size: 22),
-                  label: const Text(
-                    'Retry',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF42A5F5) : Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: doTextRecognition,
+                      icon: const Icon(Icons.refresh, size: 22),
+                      label: const Text(
+                        'Retry',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF42A5F5) : Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: navigateToEnhance,
+                      icon: const Icon(Icons.auto_fix_high, size: 22),
+                      label: const Text(
+                        'Enhance',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
