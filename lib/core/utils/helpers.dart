@@ -1,3 +1,4 @@
+// lib/core/utils/helpers.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -7,7 +8,8 @@ import 'package:share_plus/share_plus.dart';
 
 class ExportHelper {
   /// Export image as PDF
-  static Future exportImageAsPdf(File image, BuildContext context) async {
+  static Future<void> exportImageAsPdf(
+      File image, BuildContext context) async {
     try {
       final pdf = pw.Document();
       final imageBytes = await image.readAsBytes();
@@ -29,14 +31,17 @@ class ExportHelper {
       final file = File(filePath);
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: 'OCR image PDF export');
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'OCR image PDF export');
     } catch (e) {
-      _showErrorSnackBar(context, 'Export failed: $e');
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Export failed: $e');
+      }
     }
   }
 
   /// Export recognized text as TXT
-  static Future exportTextAsTxt(File image, BuildContext context) async {
+  static Future<void> exportTextAsTxt(File image, BuildContext context) async {
     try {
       final textRecognizer =
           TextRecognizer(script: TextRecognitionScript.latin);
@@ -50,14 +55,17 @@ class ExportHelper {
       final file = File(filePath);
       await file.writeAsString(recognizedText.text);
 
-      await Share.shareXFiles([XFile(file.path)], text: 'OCR text TXT export');
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'OCR text TXT export');
     } catch (e) {
-      _showErrorSnackBar(context, 'Export failed: $e');
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Export failed: $e');
+      }
     }
   }
 
   /// Export recognized text as PDF
-  static Future exportTextAsPdf(File image, BuildContext context) async {
+  static Future<void> exportTextAsPdf(File image, BuildContext context) async {
     try {
       final textRecognizer =
           TextRecognizer(script: TextRecognitionScript.latin);
@@ -88,9 +96,12 @@ class ExportHelper {
       final file = File(filePath);
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: 'OCR text PDF export');
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'OCR text PDF export');
     } catch (e) {
-      _showErrorSnackBar(context, 'Export failed: $e');
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Export failed: $e');
+      }
     }
   }
 

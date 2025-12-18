@@ -15,6 +15,7 @@ import '../card_scanner/card_scanner.dart';
 import '../image_enhancement/enhance_screen.dart';
 import '../text_recognition/recognizer_screen.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../shared/widgets/image_cropper_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -514,11 +515,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // This is called after picking or capturing an image
-  void processImage(File image) {
+  Future<void> processImage(File image) async {
     _lastImage = image;
 
-    // Temporarily skip image cropping until dependency is fixed
-    // You can add crop_your_image package functionality here later
+    // Navigate to crop screen
+    final croppedData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImageCropperWidget(imageFile: image),
+      ),
+    );
+
+    // If user cancels cropping, return
+    if (croppedData == null) return;
+
+    // Save cropped image
+    await image.writeAsBytes(croppedData);
+    _lastImage = image;
+
+    // Navigate to appropriate screen based on mode
+    if (!mounted) return;
 
     if (recognize) {
       Navigator.push(context, MaterialPageRoute(builder: (ctx) {
@@ -629,7 +645,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final file = File(filePath);
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: 'OCR image PDF export');
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'OCR image PDF export');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -661,7 +678,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final file = File(filePath);
       await file.writeAsString(recognizedText.text);
 
-      await Share.shareXFiles([XFile(file.path)], text: 'OCR text TXT export');
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'OCR text TXT export');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -710,7 +728,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final file = File(filePath);
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles([XFile(file.path)], text: 'OCR text PDF export');
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'OCR text PDF export');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
