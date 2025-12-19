@@ -20,7 +20,11 @@ class _TtsScreenState extends State<TtsScreen> {
   late FlutterTts flutterTts;
   String recognizedText = "";
   bool isLoading = true;
-  bool isSpeaking = false;
+  
+  // Playback State
+  TtsSource _playingSource = TtsSource.none;
+
+  bool isSpeaking = false; // Kept for compatibility if needed, but primarily using _playingSource
 
   String translatedText = "";
   bool isTranslating = false;
@@ -77,30 +81,46 @@ class _TtsScreenState extends State<TtsScreen> {
 
     translatedText = translation.text;
     isTranslating = false;
+
     setState(() {});
   }
 
-  Future<void> _speak() async {
-    final textToRead =
-        translatedText.isNotEmpty ? translatedText : recognizedText;
+  Future<void> _speakText(
+      String text, String languageCode, TtsSource source) async {
+    if (text.trim().isEmpty) return;
 
-    if (textToRead.trim().isEmpty) return;
+    // specific language fix
+    String langToUse = languageCode;
+    // Map short codes to full codes if necessary
+    if (langToUse.length == 2) {
+       for (var entry in ttsLanguages.entries) {
+        if (entry.value.startsWith(langToUse)) {
+          langToUse = entry.value;
+          break;
+        }
+      }
+    }
 
-    await flutterTts.setLanguage(selectedTtsLanguage);
+    await flutterTts.setLanguage(langToUse);
     await flutterTts.setSpeechRate(0.4);
     await flutterTts.setPitch(1.0);
 
-    setState(() => isSpeaking = true);
-    await flutterTts.speak(textToRead);
+    setState(() => _playingSource = source);
+    
+    await flutterTts.speak(text);
 
     flutterTts.setCompletionHandler(() {
-      setState(() => isSpeaking = false);
+      if (mounted) {
+        setState(() => _playingSource = TtsSource.none);
+      }
     });
   }
 
   Future<void> _stop() async {
     await flutterTts.stop();
-    setState(() => isSpeaking = false);
+    if (mounted) {
+      setState(() => _playingSource = TtsSource.none);
+    }
   }
 
   void _copyToClipboard(String text, String label) {
@@ -190,6 +210,8 @@ class _TtsScreenState extends State<TtsScreen> {
                     text: recognizedText,
                     icon: Icons.text_fields,
                     onCopy: () => _copyToClipboard(recognizedText, "Text"),
+                    source: TtsSource.original,
+                    languageCode: selectedTtsLanguage, // Use user selected setting
                   ),
                   const SizedBox(height: 16),
 
@@ -206,15 +228,10 @@ class _TtsScreenState extends State<TtsScreen> {
                       icon: Icons.translate,
                       onCopy: () =>
                           _copyToClipboard(translatedText, "Translation"),
+                      source: TtsSource.translated,
+                      languageCode: selectedTranslateLang, // Use translated lang
                     ),
                   if (translatedText.isNotEmpty) const SizedBox(height: 24),
-
-                  // TTS Section
-                  _buildTtsSection(isDark),
-                  const SizedBox(height: 24),
-
-                  // Control Buttons
-                  _buildControlButtons(isDark),
                 ],
               ),
             ),
@@ -227,8 +244,12 @@ class _TtsScreenState extends State<TtsScreen> {
     required String text,
     required IconData icon,
     required VoidCallback onCopy,
+    TtsSource? source, // New: Source for playback
+    String? languageCode, // New: Language for playback
   }) {
     if (text.trim().isEmpty) return const SizedBox.shrink();
+
+    final isPlayingThis = _playingSource == source && source != null;
 
     return Container(
       decoration: BoxDecoration(
@@ -284,21 +305,53 @@ class _TtsScreenState extends State<TtsScreen> {
                     ),
                   ],
                 ),
-                InkWell(
-                  onTap: onCopy,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                Row(
+                  children: [
+                    // Play/Stop Button
+                    if (source != null && languageCode != null)
+                      InkWell(
+                        onTap: () {
+                          if (isPlayingThis) {
+                            _stop();
+                          } else {
+                            _speakText(text, languageCode, source);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isPlayingThis
+                                ? Colors.redAccent
+                                : Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            isPlayingThis ? Icons.stop : Icons.volume_up,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    // Copy Button
+                    InkWell(
+                      onTap: onCopy,
                       borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.content_copy,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.content_copy,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -450,133 +503,6 @@ class _TtsScreenState extends State<TtsScreen> {
     );
   }
 
-  Widget _buildTtsSection(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark
-                        ? [
-                            const Color(0xFF42A5F5),
-                            const Color(0xFF42A5F5).withValues(alpha: 0.7),
-                          ]
-                        : [
-                            Colors.blueAccent,
-                            Colors.blueAccent.withValues(alpha: 0.7),
-                          ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.record_voice_over,
-                    color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                "Speak in",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.grey.shade900.withValues(alpha: 0.3)
-                  : Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-              ),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedTtsLanguage,
-                isExpanded: true,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  color: isDark ? const Color(0xFF42A5F5) : Colors.blueAccent,
-                ),
-                dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-                items: ttsLanguages.entries
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e.value,
-                        child: Text(e.key),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) =>
-                    setState(() => selectedTtsLanguage = value!),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControlButtons(bool isDark) {
-    final textToDisplay =
-        translatedText.isNotEmpty ? translatedText : recognizedText;
-    final canPlay = textToDisplay.trim().isNotEmpty;
-
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: canPlay ? (isSpeaking ? _stop : _speak) : null,
-            icon: Icon(
-              isSpeaking ? Icons.stop : Icons.play_arrow,
-              size: 24,
-            ),
-            label: Text(
-              isSpeaking ? "Stop" : "Play",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isSpeaking
-                  ? Colors.red
-                  : (isDark ? const Color(0xFF42A5F5) : Colors.blueAccent),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              elevation: isSpeaking ? 4 : 2,
-              disabledBackgroundColor:
-                  isDark ? Colors.grey.shade800 : Colors.grey.shade300,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
+
+enum TtsSource { original, translated, none }
